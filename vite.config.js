@@ -8,14 +8,12 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [
-    remix({
-      presets: [hydrogen.preset()],
-    }),
+    remix(),
+    hydrogen(),
+    tsconfigPaths(),
     netlifyPlugin(),
     tailwindcss(),
-    hydrogen(),
     reactRouter(),
-    tsconfigPaths(),
   ],
   build: {
     // Allow a strict Content-Security-Policy
