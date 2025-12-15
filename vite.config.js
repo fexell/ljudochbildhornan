@@ -1,14 +1,12 @@
 import {defineConfig} from 'vite';
 import {hydrogen} from '@shopify/hydrogen/vite';
 import {netlifyPlugin} from '@netlify/remix-edge-adapter/plugin';
-import {vitePlugin as remix} from '@remix-run/dev';
 import {reactRouter} from '@react-router/dev/vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [
-    remix(),
     hydrogen(),
     tsconfigPaths(),
     netlifyPlugin(),
