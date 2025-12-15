@@ -1,8 +1,8 @@
 // netlify/functions/ssr.js
-import * as build from '../../dist/server/index.js';
-import {createRequestHandler} from '@shopify/hydrogen/entry-server';
+import * as build from '../../dist/server/index.js'; // adjust path if needed
+import { createRequestHandler } from '@netlify/remix-adapter';
 
-// Create Hydrogen request handler
+// Create Netlify-compatible request handler
 const handleRequest = createRequestHandler({
   build,
   mode: process.env.NODE_ENV,
@@ -19,7 +19,7 @@ export async function handler(event) {
         : event.body,
   });
 
-  // Call Hydrogen handler
+  // Call Remix/Hydrogen handler
   const response = await handleRequest(request);
 
   // Convert Fetch Response to Netlify response
