@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     hydrogen(),
-    oxygen(),
+    // oxygen(),
     reactRouter(),
     tsconfigPaths(),
   ],

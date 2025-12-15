@@ -8,3 +8,9 @@
 
 [dev]
   targetPort = 3000
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/ssr"
+  status = 200
+  force = true
