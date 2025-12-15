@@ -6,9 +6,6 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-[dev]
-  targetPort = 3000
-
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/ssr"
