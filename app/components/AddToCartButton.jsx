@@ -1,4 +1,7 @@
 import {CartForm} from '@shopify/hydrogen';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faPlus} from '@fortawesome/free-solid-svg-icons';
+import {clsx} from 'clsx';
 
 /**
  * @param {{
@@ -26,10 +29,17 @@ export function AddToCartButton({
             value={JSON.stringify(analytics)}
           />
           <button
+            className={clsx(
+              "p-4 rounded-xl bg-light-blue hover:bg-light-blue/80 hover:cursor-pointer",
+              {
+                'bg-gray-300! opacity-50 cursor-not-allowed!': disabled || fetcher.state !== 'idle',
+              }
+            )}
             type="submit"
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== 'idle'}
           >
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
             {children}
           </button>
         </>

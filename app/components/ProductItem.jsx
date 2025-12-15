@@ -16,7 +16,7 @@ export function ProductItem({product, loading}) {
   const image = product.featuredImage;
   return (
     <Link
-      className="product-item"
+      className="relative block w-full h-full product-item"
       key={product.id}
       prefetch="intent"
       to={variantUrl}

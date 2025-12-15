@@ -1,27 +1,152 @@
-import {Suspense} from 'react';
+import {Suspense, useEffect, useId, useRef, useState} from 'react';
 import {Await, NavLink, useAsyncValue} from 'react-router';
-import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
-import {useAside} from '~/components/Aside';
+import {useAnalytics, useOptimisticCart, Image} from '@shopify/hydrogen';
+import {Aside, useAside} from '~/components/Aside';
+import {SearchInput} from './SearchInput';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faCartShopping, faBars} from '@fortawesome/free-solid-svg-icons';
 
 /**
  * @param {HeaderProps}
  */
-export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
+export function Header({header, cart, isLoggedIn, publicStoreDomain}) {
   const {shop, menu} = header;
+  const logoImage = shop?.brand?.logo?.image;
+  const queriesDatalistId = useId();
+
+  const {open} = useAside();
+
   return (
-    <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
-      </NavLink>
-      <HeaderMenu
-        menu={menu}
-        viewport="desktop"
-        primaryDomainUrl={header.shop.primaryDomain.url}
-        publicStoreDomain={publicStoreDomain}
-      />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
-    </header>
+    <>
+      <header className="flex flex-col justify-center bg-light-blue">
+        <div className="flex justify-center shadow-lg max-md:w-full">
+          <div className="flex flex-col lg:w-5xl max-lg:w-full max-lg:px-4">
+            <div className="flex flex-row max-md:flex-col max-md:w-full max-md:px-4">
+              <div className="">
+                <NavLink className='flex justify-center items-center' prefetch="intent" to="/" end>
+                  {logoImage ? (
+                    <Image
+                      alt={shop.name}
+                      data={logoImage}
+                      className="header-logo w-50!"
+                      width={logoImage.width}
+                      height={logoImage.height}
+                      sizes="(min-width: 45em) 50vw, 100vw"
+                    />
+                  ) : (
+                    <span>{shop?.name}</span>
+                  )}
+                </NavLink>
+              </div>
+              <div className='flex flex-1 w-full max-lg:grow-4 md:mx-2 justify-center items-center'>
+                <div className="flex flex-col w-full">
+                  <div className="absolute top-0 px-6 py-3 max-md:hidden">
+                    <p>Lorem ipsum dolor sit amet</p>
+                  </div>
+                  <div className="w-full max-lg:grow-4 max-md:mb-4">
+                    <SearchInput />
+                  </div>
+                </div>
+              </div>
+              <div className="md:hidden max-md:fixed max-md:top-2 max-md:left-2">
+                <div>
+                  <button onClick={() => open('mobile')} className="flex w-full h-full justify-center items-center p-4 cursor-pointer hover:bg-light-blue/80!">
+                    <h3>
+                      <FontAwesomeIcon icon={faBars} />
+                    </h3>
+                  </button>
+                </div>
+              </div>
+              <div className="flex max-md:fixed max-md:top-2 max-md:right-2">
+                <div className="flex w-full h-full justify-center items-center">
+                  <button onClick={() => open('cart')} className="relative w-12 h-12 rounded-full hover:bg-white/50 hover:cursor-pointer">
+                    <FontAwesomeIcon icon={faCartShopping} />
+                    {cart?.totalQuantity > 0 && (
+                      <span className="absolute w-5 h-5 right-0 bottom-0 rounded-full text-[0.75rem] text-white bg-dark-blue">{cart?.totalQuantity ?? 0}</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-center max-md:hidden">
+          <HeaderMenu
+            menu={menu}
+            viewport="desktop"
+            primaryDomainUrl={header.shop.primaryDomain.url}
+            publicStoreDomain={publicStoreDomain}
+          />
+          {/* <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} /> */}
+        </div>
+      </header>
+    </>
   );
+}
+
+function DropdownMenu({ item, close }) {
+  const [isOpen, setOpen] = useState(false);
+  const firstTap = useRef(true);
+  const [isTouchDevice, setTouchDevice] = useState(false);
+
+  useEffect(() => {
+    if(typeof window !== "undefined")
+      setTouchDevice(window.matchMedia("(hover: none)").matches);
+  }, [])
+
+  const handleTouch = (e) => {
+    if(!isTouchDevice) return;
+
+    if(firstTap.current) {
+      e.preventDefault();
+      setOpen(true);
+      firstTap.current = false;
+    }
+  };
+
+  const closeAll = () => {
+    setOpen(false);
+    firstTap.current = true;
+    close();
+  };
+
+  return (
+    <>
+      <div
+        className="relative"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => {
+          setOpen(false);
+          firstTap.current = true;
+        }}>
+          <NavLink
+            to={item.url}
+            className="header-menu-item p-4 block"
+            aria-expanded={isOpen}
+            onClick={handleTouch}
+            style={activeLinkStyle}>
+            {item.title}
+          </NavLink>
+
+          {isOpen && (
+            <div className="absolute w-sm -left-36 py-2 border-t-4 border-white rounded-lg bg-light-blue shadow-xl z-40">
+              <ul className="flex-1 px-[15px]">
+                {item.items.map(({id, title, url}) => (
+                  <li key={id}>
+                    <NavLink
+                      className="relative block p-3 decoration-none hover:bg-blue/40 z-50"
+                      to={url}
+                      onClick={closeAll}>
+                      {title}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+    </>
+  )
 }
 
 /**
@@ -41,44 +166,52 @@ export function HeaderMenu({
   const className = `header-menu-${viewport}`;
   const {close} = useAside();
 
-  return (
-    <nav className={className} role="navigation">
-      {viewport === 'mobile' && (
-        <NavLink
-          end
-          onClick={close}
-          prefetch="intent"
-          style={activeLinkStyle}
-          to="/"
-        >
-          Home
-        </NavLink>
-      )}
-      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
-        if (!item.url) return null;
+  const normalizeUrl = (url) => {
+    if(!url) return "/";
+    
+    const isInternal = [primaryDomainUrl, publicStoreDomain, "myshopify.com"].some(domain => url.includes(domain));
 
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        return (
-          <NavLink
-            className="header-menu-item"
-            end
-            key={item.id}
-            onClick={close}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
-            {item.title}
-          </NavLink>
-        );
-      })}
-    </nav>
+    return isInternal ? new URL(url).pathname : url;
+  }
+
+  const items = (menu || FALLBACK_HEADER_MENU).items;
+
+  return (
+    <>
+      <nav className={`${className}`} role="navigation">
+        {items.map((item) => {
+          if(!item.url) return null;
+
+          const url = normalizeUrl(item.url);
+
+          if(item.items?.length > 0) {
+            const normalizedItem = {
+              ...item,
+              url,
+              items: item.items.map((sub) => ({
+                ...sub,
+                url: normalizeUrl(sub.url),
+              }))
+            }
+
+            return <DropdownMenu key={item.id} item={normalizedItem} close={close} />
+          }
+
+          return (
+            <NavLink
+              key={item.id}
+              to={url}
+              end
+              onClick={close}
+              prefetch="intent"
+              className="header-menu-item p-4 text-nowrap"
+              style={activeLinkStyle}>
+              {item.title}
+            </NavLink>
+          )
+        })}
+      </nav>
+    </>
   );
 }
 

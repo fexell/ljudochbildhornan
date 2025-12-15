@@ -1,22 +1,71 @@
-import {Suspense} from 'react';
+import {Suspense, useEffect} from 'react';
 import {Await, NavLink} from 'react-router';
+import { Image } from '@shopify/hydrogen';
+
+import { HeaderMenu } from './Header';
+
+// Use a client-side loader to avoid SSR/client hydration mismatch.
+import FreeMapClientLoader from './FreeMapClientLoader';
 
 /**
  * @param {FooterProps}
  */
 export function Footer({footer: footerPromise, header, publicStoreDomain}) {
+  const {shop} = header;
+  const logoImage = header?.shop?.brand?.logo?.image;
+
   return (
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
           <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
+            <div className="flex flex-col bg-light-blue">
+              <div>
+                <div>
+                  <Suspense fallback={<div>Laddar karta...</div>}>
+                    <FreeMapClientLoader />
+                  </Suspense>
+                </div>
+              </div>
+              <div className="flex flex-col justify-center min-h-96 lg:w-5xl mx-auto">
+                <div className="flex justify-center items-center">
+                  <NavLink className='flex justify-center items-center' prefetch="intent" to="/" end>
+                    {logoImage ? (
+                      <Image
+                        alt={shop.name}
+                        data={logoImage}
+                        className="header-logo w-50!"
+                        width={logoImage.width}
+                        height={logoImage.height}
+                        sizes="(min-width: 45em) 50vw, 100vw"
+                      />
+                    ) : (
+                      <span>{shop?.name}</span>
+                    )}
+                  </NavLink>
+                </div>
+                <div className="flex flex-col justify-center">
+                  {header?.menu && (
+                    <FooterMenu
+                      classes="flex flex-row text-black!"
+                      menu={header.menu}
+                      primaryDomainUrl={header.shop.primaryDomain.url}
+                      publicStoreDomain={publicStoreDomain}
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="bg-neutral-950">
+                {footer?.menu && header.shop.primaryDomain?.url && (
+                  <FooterMenu
+                    classes="flex py-4 text-white!"
+                    menu={footer.menu}
+                    primaryDomainUrl={header.shop.primaryDomain.url}
+                    publicStoreDomain={publicStoreDomain}
+                  />
+                )}
+              </div>
+            </div>
           </footer>
         )}
       </Await>
@@ -31,9 +80,9 @@ export function Footer({footer: footerPromise, header, publicStoreDomain}) {
  *   publicStoreDomain: string;
  * }}
  */
-function FooterMenu({menu, primaryDomainUrl, publicStoreDomain}) {
+function FooterMenu({menu, primaryDomainUrl, publicStoreDomain, classes}) {
   return (
-    <nav className="footer-menu" role="navigation">
+    <nav className={`footer-menu ${classes || ''}`} role="navigation">
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
@@ -115,7 +164,6 @@ const FALLBACK_FOOTER_MENU = {
 function activeLinkStyle({isActive, isPending}) {
   return {
     fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
   };
 }
 

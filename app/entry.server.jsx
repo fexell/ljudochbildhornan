@@ -1,7 +1,9 @@
 import {ServerRouter} from 'react-router';
 import {isbot} from 'isbot';
-import {renderToReadableStream} from 'react-dom/server';
+import ReacttDOMServer from 'react-dom/server';
 import {createContentSecurityPolicy} from '@shopify/hydrogen';
+
+const {renderToReadableStream} = ReacttDOMServer;
 
 /**
  * @param {Request} request
@@ -17,11 +19,19 @@ export default async function handleRequest(
   reactRouterContext,
   context,
 ) {
-  const {nonce, header, NonceProvider} = createContentSecurityPolicy({
+  const {nonce, header: baseHeader, NonceProvider} = createContentSecurityPolicy({
     shop: {
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    defaultSrc: ["'self'", 'https://cdn.shopify.com', 'https://shopify.com', 'http://localhost:*'],
+    imgSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://a.tile.openstreetmap.org',
+      'https://b.tile.openstreetmap.org',
+      'https://c.tile.openstreetmap.org',
+    ],
   });
 
   const body = await renderToReadableStream(
@@ -47,7 +57,7 @@ export default async function handleRequest(
   }
 
   responseHeaders.set('Content-Type', 'text/html');
-  responseHeaders.set('Content-Security-Policy', header);
+  responseHeaders.set('Content-Security-Policy', baseHeader);
 
   return new Response(body, {
     headers: responseHeaders,

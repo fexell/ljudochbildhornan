@@ -4,3 +4,9 @@
  */
 
 @import 'tailwindcss';
+
+@theme {
+  --color-light-blue: #7AC9EF;
+  --color-blue: #2D8FC7;
+  --color-dark-blue: #002B6A;
+}

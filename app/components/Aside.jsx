@@ -1,4 +1,6 @@
 import {createContext, useContext, useEffect, useState} from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * A side bar component with Overlay
@@ -15,7 +17,7 @@ import {createContext, useContext, useEffect, useState} from 'react';
  *   heading: React.ReactNode;
  * }}
  */
-export function Aside({children, heading, type}) {
+export function Aside({children, heading, type, classes}) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
 
@@ -43,14 +45,21 @@ export function Aside({children, heading, type}) {
       role="dialog"
     >
       <button className="close-outside" onClick={close} />
-      <aside>
-        <header>
-          <h3>{heading}</h3>
-          <button className="close reset" onClick={close} aria-label="Close">
-            &times;
+      <aside className={`bg-white ${classes ?? ''}`}>
+        {type !== "mobile" && (
+          <header className="">
+            <h3>{heading}</h3>
+            <button className="close reset" onClick={close} aria-label="Close">
+              &times;
+            </button>
+          </header>
+        )}
+        {type === "mobile" && (
+          <button className="close-mobile-menu reset absolute top-4 right-4 bg-transparent!" onClick={close} aria-label="Close">
+            <FontAwesomeIcon icon={faTimes} size="lg" />
           </button>
-        </header>
-        <main>{children}</main>
+        )}
+        <main className={`${type === "mobile" ? "h-full m-0!" : ""}`}>{children}</main>
       </aside>
     </div>
   );

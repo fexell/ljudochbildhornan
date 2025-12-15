@@ -2,6 +2,10 @@ import {Await, useLoaderData, Link} from 'react-router';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
 import {ProductItem} from '~/components/ProductItem';
+import { useVariantUrl } from '~/lib/variants';
+
+import Banner1 from '~/assets/banner-1.jpg';
+import Product from './($locale).products.$handle';
 
 /**
  * @type {Route.MetaFunction}
@@ -29,13 +33,23 @@ export async function loader(args) {
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context}) {
+  const {storefront} = context;
+  const {products} = await storefront.query(BEST_SELLING_PRODUCTS_QUERY);
+  const bestSellingProduct = products.nodes;
+
   const [{collections}] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
+    context.storefront.query(FEATURED_COLLECTION_QUERY, {
+      variables: {
+        language: context.storefront.i18n.language,
+        country: context.storefront.i18n.country,
+      },
+    }),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
   return {
     featuredCollection: collections.nodes[0],
+    bestSellingProduct,
   };
 }
 
@@ -47,7 +61,12 @@ async function loadCriticalData({context}) {
  */
 function loadDeferredData({context}) {
   const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .query(RECOMMENDED_PRODUCTS_QUERY, {
+      variables: {
+        language: context.storefront.i18n.language,
+        country: context.storefront.i18n.country,
+      },
+    })
     .catch((error) => {
       // Log query errors, but don't throw them so the page can still render
       console.error(error);
@@ -62,9 +81,19 @@ function loadDeferredData({context}) {
 export default function Homepage() {
   /** @type {LoaderReturnData} */
   const data = useLoaderData();
+  const bestSellingProduct = data.bestSellingProduct || [];
+  const variantUrl = useVariantUrl(bestSellingProduct[0].handle);
+
   return (
     <div className="home">
-      <FeaturedCollection collection={data.featuredCollection} />
+      {/* <FeaturedCollection collection={data.featuredCollection} /> */}
+      <div
+        className="relative flex flex-col h-96 justify-center items-end rounded-xl before:absolute before:inset-0 before:bg-light-blue/80 before:rounded-xl"
+        style={{ backgroundImage: `url(${Banner1})`, backgroundSize: "cover" }}>
+        <Link className="relative inline-block w-full max-w-48 h-full max-h-fit mr-8" to={variantUrl}>
+          <Image aspectRatio='1/1' className="rounded-full! object-contain" data={bestSellingProduct[0].featuredImage} size="100%" sizes="(min-width: 45em) 50vw, 100vw" />
+        </Link>
+      </div>
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );
@@ -100,8 +129,8 @@ function FeaturedCollection({collection}) {
  */
 function RecommendedProducts({products}) {
   return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
+    <div className="recommended-products py-8">
+      <h2>Rekommenderade produkter</h2>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
           {(response) => (
@@ -167,6 +196,28 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
     products(first: 4, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
+      }
+    }
+  }
+`;
+
+const BEST_SELLING_PRODUCTS_QUERY = `#graphql
+  query BestSellingProducts {
+    products(first: 1, sortKey: BEST_SELLING) {
+      nodes {
+        id
+        title
+        handle
+        featuredImage {
+          url
+          altText
+        }
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
       }
     }
   }

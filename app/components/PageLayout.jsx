@@ -9,6 +9,7 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import { MyMobileMenu } from './MobileMenu';
 
 /**
  * @param {PageLayoutProps}
@@ -25,16 +26,28 @@ export function PageLayout({
     <Aside.Provider>
       <CartAside cart={cart} />
       <SearchAside />
-      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+      <Aside type="mobile">
+        <MyMobileMenu header={header} publicStoreDomain={publicStoreDomain} primaryDomainUrl={header.shop.primaryDomain.url} />
+      </Aside>
       {header && (
-        <Header
-          header={header}
-          cart={cart}
-          isLoggedIn={isLoggedIn}
-          publicStoreDomain={publicStoreDomain}
-        />
+        <Suspense fallback={null}>
+          <Await resolve={cart}>
+            {(cartData) => (
+            <Header
+              header={header}
+              cart={cartData}
+              isLoggedIn={isLoggedIn}
+              publicStoreDomain={publicStoreDomain}
+            />
+            )}
+          </Await>
+        </Suspense>
       )}
-      <main>{children}</main>
+      <main className="flex flex-col items-center py-4">
+        <div className="lg:w-5xl">
+          {children}
+        </div>
+      </main>
       <Footer
         footer={footer}
         header={header}
@@ -49,7 +62,7 @@ export function PageLayout({
  */
 function CartAside({cart}) {
   return (
-    <Aside type="cart" heading="CART">
+    <Aside type="cart" heading="KUNDVAGN">
       <Suspense fallback={<p>Loading cart ...</p>}>
         <Await resolve={cart}>
           {(cart) => {

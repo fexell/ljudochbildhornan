@@ -2,7 +2,7 @@
   --aside-width: 400px;
   --cart-aside-summary-height-with-discount: 300px;
   --cart-aside-summary-height: 250px;
-  --grid-item-width: 355px;
+  --grid-item-width: 200px;
   --header-height: 64px;
   --color-dark: #000;
   --color-light: #fff;
@@ -34,7 +34,6 @@ img {
 }
 
 aside {
-  background: var(--color-light);
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
   height: 100vh;
   width: min(var(--aside-width), 100vw);
@@ -181,22 +180,33 @@ button.reset:hover:not(:has(> *)) {
 
 .header-menu-mobile {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   grid-gap: 1rem;
 }
 
 .header-menu-desktop {
-  display: none;
+  display: flex;
   grid-gap: 1rem;
-  @media (min-width: 45em) {
-    display: flex;
-    grid-gap: 1rem;
-    margin-left: 3rem;
-  }
 }
 
 .header-menu-item {
+  position: relative;
+  text-decoration: none;
   cursor: pointer;
+
+  &:hover, &.active {
+    &::before {
+      content: "";
+      position: absolute;
+      display: block;
+      width: 100%;
+      height: 4px;
+      left: 0;
+      bottom: 0;
+      border-radius: 4px 4px 0 0;
+      background-color: #ffffff;
+    }
+  }
 }
 
 .header-ctas {
@@ -216,7 +226,6 @@ button.reset:hover:not(:has(> *)) {
 * --------------------------------------------------
 */
 .footer {
-  background: var(--color-dark);
   margin-top: auto;
 }
 
@@ -225,11 +234,9 @@ button.reset:hover:not(:has(> *)) {
   display: flex;
   flex-wrap: wrap;
   grid-gap: 1rem;
-  padding: 1rem;
 }
 
 .footer-menu a {
-  color: var(--color-light);
   min-width: fit-content;
 }
 
@@ -265,10 +272,9 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .cart-summary-aside {
-  background: white;
-  border-top: 1px solid var(--color-dark);
   bottom: 0;
   padding-top: 0.75rem;
+  padding-bottom: 1rem;
   position: absolute;
   width: calc(var(--aside-width) - 40px);
 }

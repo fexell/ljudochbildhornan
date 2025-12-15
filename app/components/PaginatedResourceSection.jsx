@@ -27,8 +27,8 @@ export function PaginatedResourceSection({
             ) : (
               resourcesMarkup
             )}
-            <NextLink>
-              {isLoading ? 'Loading...' : <span>Load more ↓</span>}
+            <NextLink className="block p-4 rounded-lg text-center bg-light-blue hover:bg-light-blue/80 hover:cursor-pointer mt-4">
+              {isLoading ? 'Loading...' : <span>Laddar fler ↓</span>}
             </NextLink>
           </div>
         );
