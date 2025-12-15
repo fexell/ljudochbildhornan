@@ -1,6 +1,6 @@
 // netlify/functions/ssr.js
 import * as build from '../../dist/server/index.js';
-import {createRequestHandler} from '@shopify/hydrogen';
+import {createRequestHandler} from '@shopify/hydrogen/entry-server';
 
 // Create Hydrogen request handler
 const handleRequest = createRequestHandler({
