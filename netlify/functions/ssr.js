@@ -1,16 +1,12 @@
-import * as mod from '../../dist/server/index.js';
+import {createRequestHandler} from '@shopify/hydrogen';
+import * as build from '../../dist/server/server-build.js';
 
-const fetchHandler =
-  mod.fetch ??
-  mod.default?.fetch;
+const handleRequest = createRequestHandler({
+  build,
+  mode: process.env.NODE_ENV,
+});
 
-if (!fetchHandler) {
-  throw new Error(
-    'Hydrogen server build does not export a fetch handler',
-  );
-}
-
-export async function handler(event, context) {
+export async function handler(event) {
   const request = new Request(event.rawUrl, {
     method: event.httpMethod,
     headers: event.headers,
@@ -20,11 +16,7 @@ export async function handler(event, context) {
         : event.body,
   });
 
-  const response = await fetchHandler(
-    request,
-    process.env,
-    context,
-  );
+  const response = await handleRequest(request);
 
   return {
     statusCode: response.status,
