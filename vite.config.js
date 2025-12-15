@@ -9,18 +9,16 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     hydrogen(),
-    // oxygen(),
+    oxygen(),
     reactRouter(),
     tsconfigPaths(),
   ],
   build: {
-    outDir: 'dist/client',
     // Allow a strict Content-Security-Policy
     // withtout inlining assets as base64:
     assetsInlineLimit: 0,
   },
   ssr: {
-    noExternal: true,
     optimizeDeps: {
       /**
        * Include dependencies here if they throw CJS<>ESM errors.
